@@ -29,9 +29,27 @@ const create = async ({
   }
 };
 // Get all accounts
-const list = async () => {
+const list = async (current = 1, pageSize = 10) => {
   try {
-    return await User.find({}).exec();
+    // Tính toán số lượng bản ghi cần bỏ qua dựa trên `current` (trang hiện tại)
+    const skip = (current - 1) * pageSize;
+
+    // Truy vấn danh sách tài khoản với phân trang
+    const accounts = await User.find({})
+      .skip(skip) // Bỏ qua các bản ghi dựa trên `current`
+      .limit(pageSize) // Giới hạn số bản ghi trên mỗi trang theo `pageSize`
+      .exec();
+
+    // Đếm tổng số tài khoản để tính tổng số trang
+    const totalAccounts = await User.countDocuments({});
+
+    return {
+      accounts,
+      current, // Trang hiện tại
+      pageSize, // Số bản ghi trên mỗi trang
+      totalPages: Math.ceil(totalAccounts / pageSize), // Tổng số trang
+      totalAccounts, // Tổng số tài khoản
+    };
   } catch (error) {
     throw new Error(error.toString());
   }
@@ -45,7 +63,6 @@ const getById = async (id) => {
   }
 };
 
-
 const loginAccount = async (username) => {
   try {
     const user = await User.findOne({ username }).exec();
@@ -56,7 +73,7 @@ const loginAccount = async (username) => {
 };
 const edit = async (
   id,
-  { username, email, password, dob, gender, phoneNumber, avatar,role_id }
+  { username, email, password, dob, gender, phoneNumber, avatar, role_id }
 ) => {
   try {
     const updatedAccount = await User.findByIdAndUpdate(

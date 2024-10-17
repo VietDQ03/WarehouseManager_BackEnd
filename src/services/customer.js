@@ -19,13 +19,28 @@ const createCustomer = async ({
 }
 };
 
-const listCustomer = async () => {
+const listCustomer = async (current = 1, pageSize = 10) => {
     try {
-        return await Customers.find({}).exec();
+        const skip = (current - 1) * pageSize; // Tính số bản ghi cần bỏ qua
+        const customers = await Customers.find({})
+            .skip(skip) // Bỏ qua các bản ghi trước trang hiện tại
+            .limit(pageSize) // Giới hạn số lượng bản ghi
+            .exec();
+
+        // Lấy tổng số khách hàng để tính tổng số trang
+        const totalCustomers = await Customers.countDocuments({});
+
+        return {
+            data: customers, // Dữ liệu khách hàng
+            total: totalCustomers, // Tổng số khách hàng
+            current, // Trang hiện tại
+            pageSize, // Số lượng khách hàng mỗi trang
+        };
     } catch (error) {
-        throw new Error(error.toString());        
+        throw new Error(error.toString());
     }
 };
+
 
 const getById = async (id) => {
     try {

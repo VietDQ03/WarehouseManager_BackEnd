@@ -30,7 +30,6 @@ const customerSchema = new mongoose.Schema(
     logo: [logoSchema], // Sử dụng logoSchema cho field logo
     description: {
       type: String,
-      required: [true, "Description is required"],
     },
     phone: {
       type: String,
@@ -46,7 +45,6 @@ const customerSchema = new mongoose.Schema(
     },
     website: {
       type: String,
-      required: [true, "Website is required"],
     },
   },
   {
