@@ -25,7 +25,6 @@ const customerSchema = new mongoose.Schema(
       type: String,
       trim: true,
       required: [true, "Customer name is required"],
-      unique: [true, "Customer name must be unique"],
     },
     logo: [logoSchema], // Sử dụng logoSchema cho field logo
     description: {
@@ -38,6 +37,7 @@ const customerSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, "Email is required"],
+      unique: [true, "Customer name must be unique"],
     },
     address: {
       type: String,
