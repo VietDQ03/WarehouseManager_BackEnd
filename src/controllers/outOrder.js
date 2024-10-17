@@ -85,13 +85,17 @@ const getAll = async (req, res) => {
   // DELETE: /products/1
   const del = async (req, res) => {
     try {
-      res.status(200).json(await OutOrderRepo.delete(req.params.id));
-    } catch (error) {
+      const result = await OutOrderRepo.deleteoutOrder(req.params.id); // Đảm bảo gọi đúng phương thức
+      if (!result) {
+          return res.status(404).json({ error: "Order not found." });
+      }
+      res.status(200).json(result);
+  } catch (error) {
       res.status(500).json({
-        error: error.toString(),
+          error: error.toString(),
       });
-    }
-  };
+  }
+};
   const getByDate = async (req, res) => {
     try {
         const orders = await OutOrderRepo.getByDate(req.params.date);
