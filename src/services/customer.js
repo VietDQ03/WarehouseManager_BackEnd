@@ -21,26 +21,39 @@ const createCustomer = async ({
 
 const listCustomer = async (current = 1, pageSize = 10) => {
     try {
-        const skip = (current - 1) * pageSize; // Tính số bản ghi cần bỏ qua
+        // Tính toán số bản ghi cần bỏ qua dựa trên trang hiện tại và pageSize
+        const skip = (current - 1) * pageSize;
+
+        // Truy vấn danh sách khách hàng với phân trang
         const customers = await Customers.find({})
             .skip(skip) // Bỏ qua các bản ghi trước trang hiện tại
-            .limit(pageSize) // Giới hạn số lượng bản ghi
+            .limit(pageSize) // Giới hạn số lượng bản ghi trên mỗi trang
             .exec();
 
         // Lấy tổng số khách hàng để tính tổng số trang
         const totalCustomers = await Customers.countDocuments({});
 
+        // Tính tổng số trang
+        const totalPages = Math.ceil(totalCustomers / pageSize);
+
+        // Nếu người dùng thay đổi pageSize và trang hiện tại không hợp lệ (ví dụ: vượt quá totalPages), điều chỉnh current
+        const adjustedCurrent = current > totalPages ? totalPages : current;
+
         return {
-            data: customers, // Dữ liệu khách hàng
-            total: totalCustomers, // Tổng số khách hàng
-            current, // Trang hiện tại
-            pageSize, // Số lượng khách hàng mỗi trang
+            data: {
+                customers, // Dữ liệu khách hàng của trang hiện tại
+                total: totalCustomers, // Tổng số khách hàng
+                current: adjustedCurrent, // Trang hiện tại (đã điều chỉnh nếu cần)
+                pageSize, // Số lượng khách hàng mỗi trang
+                totalPages, // Tổng số trang
+            },
         };
     } catch (error) {
         throw new Error(error.toString());
     }
 };
 
+  
 
 const getById = async (id) => {
     try {

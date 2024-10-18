@@ -24,7 +24,6 @@ const customerSchema = new mongoose.Schema(
     name: {
       type: String,
       trim: true,
-      required: [true, "Customer name is required"],
     },
     logo: [logoSchema], // Sử dụng logoSchema cho field logo
     description: {

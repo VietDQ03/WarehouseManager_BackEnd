@@ -1,7 +1,9 @@
 import { CustomerRepo } from "../services/index.js";
 const getallCustomer = async (req, res) => {
+  const current = parseInt(req.query.current) || 1; // Lấy tham số 'current', mặc định là 1
+  const pageSize = parseInt(req.query.pageSize) || 10;
   try {
-    res.status(200).json(await CustomerRepo.listCustomer());
+    res.status(200).json(await CustomerRepo.listCustomer(current, pageSize));
   } catch (error) {
     res.status(500).json({
       message: error.toString(),
