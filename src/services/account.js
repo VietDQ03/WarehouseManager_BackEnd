@@ -1,4 +1,6 @@
 import User from "../models/account.js";
+import jwt from 'jsonwebtoken'; // Import JWT
+
 // Create
 const create = async ({
   username,
@@ -108,6 +110,25 @@ const removeRefreshToken = async (userId) => {
   }
 };
 
+const getUserInfo = async (token) => {
+  try {
+    // Giải mã token để lấy thông tin userId
+    const decoded = jwt.verify(token, 'your_secret_key'); // Thay 'your_secret_key' bằng khóa bí mật của bạn
+   
+    // Tìm thông tin người dùng dựa trên userId
+    const user = await User.findOne({ _id: decoded.userId }).exec();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    return user;
+  } catch (error) {
+    throw new Error(error.toString());
+  }
+};
+
+
 export default {
   create,
   list,
@@ -117,4 +138,5 @@ export default {
   getById,
   loginAccount,
   removeRefreshToken,
+  getUserInfo
 };

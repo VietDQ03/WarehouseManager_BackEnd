@@ -32,7 +32,7 @@ const listCustomer = async (current = 1, pageSize = 10) => {
 
         // Lấy tổng số khách hàng để tính tổng số trang
         const totalCustomers = await Customers.countDocuments({});
-
+  
         // Tính tổng số trang
         const totalPages = Math.ceil(totalCustomers / pageSize);
 

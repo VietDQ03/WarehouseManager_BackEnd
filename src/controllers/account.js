@@ -1,34 +1,41 @@
 import { AccountRepo } from "../services/index.js";
+import jwt from 'jsonwebtoken';
 import {
   signAccessToken,
   signRefreshToken,
   verifyRefreshToken,
 } from "../jwt_helper.js";
 import createError from "http-errors";
+
 // GET: /accounts
 const getAccount = async (req, res) => {
   try {
-    res.status(200).json(await AccountRepo.list());
+    const accounts = await AccountRepo.list();
+    res.status(200).json(accounts);
   } catch (error) {
     res.status(500).json({
       message: error.toString(),
     });
   }
 };
+
 const getAccountById = async (req, res) => {
   try {
-    res.status(200).json(await AccountRepo.getById(req.params.id));
+    const account = await AccountRepo.getById(req.params.id);
+    if (!account) {
+      throw createError.NotFound("Account not found");
+    }
+    res.status(200).json(account);
   } catch (error) {
     res.status(500).json({
       message: error.toString(),
     });
   }
 };
+
 // POST: /accounts
 const createAccount = async (req, res) => {
   try {
-    // Get object from request body
-
     const {
       username,
       email,
@@ -39,6 +46,7 @@ const createAccount = async (req, res) => {
       avatar,
       role_id,
     } = req.body;
+
     const newUser = await AccountRepo.create({
       username,
       email,
@@ -54,68 +62,102 @@ const createAccount = async (req, res) => {
     res.status(500).json({ message: error.toString() });
   }
 };
-// PUT: /accounts/1
+
+// PUT: /accounts/:id
 const editAccount = async (req, res) => {
   try {
-    res.status(200).json(await AccountRepo.edit(req.params.id, req.body));
+    const updatedAccount = await AccountRepo.edit(req.params.id, req.body);
+    if (!updatedAccount) {
+      throw createError.NotFound("Account not found");
+    }
+    res.status(200).json(updatedAccount);
   } catch (error) {
-    res.status(500).json({});
+    res.status(500).json({ message: error.toString() });
   }
 };
+
 const loginAccount = async (req, res, next) => {
   try {
     const { username, password } = req.body;
-    if (!username || !password)
-      throw createError.BadRequest(`Invalid Username/Password`);
+    if (!username || !password) {
+      throw createError.BadRequest("Invalid Username/Password");
+    }
 
     const existUser = await AccountRepo.loginAccount(username);
-    if (!existUser) throw createError.NotFound("User not registered");
+    if (!existUser) {
+      throw createError.NotFound("User not registered");
+    }
 
-    if (password !== existUser.password)
-      throw createError.Unauthorized(`Username/Password not valid`);
+    if (password !== existUser.password) {
+      throw createError.Unauthorized("Username/Password not valid");
+    }
 
     const accessToken = await signAccessToken(existUser.id);
     const refreshToken = await signRefreshToken(existUser.id);
-    res.send({ accessToken, refreshToken, existUser });
+    res.status(200).json({ accessToken, refreshToken, existUser });
   } catch (error) {
     next(error);
   }
 };
-// DELETE: /accounts/1
+
+// DELETE: /accounts/:id
 const deleteAccount = async (req, res) => {
   try {
-    res.status(200).json(await AccountRepo.deleteAccount(req.params.id));
+    const deletedAccount = await AccountRepo.deleteAccount(req.params.id);
+    if (!deletedAccount) {
+      throw createError.NotFound("Account not found");
+    }
+    res.status(200).json({ message: "Account deleted successfully" });
   } catch (error) {
-    res.status(500).json({
-      error: error.toString(),
-    });
+    res.status(500).json({ error: error.toString() });
   }
 };
+
 const logoutAccount = async (req, res, next) => {
   try {
-    const { refreshToken } = req.body;
-
-    // Kiểm tra nếu refreshToken không được cung cấp
-    if (!refreshToken) {
-      throw createError.BadRequest("Refresh token is required");
+    // Lấy token từ tiêu đề Authorization
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      throw createError.Unauthorized("Token is required");
     }
 
-    // Xác minh tính hợp lệ của refreshToken
-    const userId = await verifyRefreshToken(refreshToken);
+    // Giải mã token để lấy userId
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
-    if (!userId) {
-      throw createError.Unauthorized("Invalid refresh token");
-    }
+    // Xóa refreshToken của người dùng trong cơ sở dữ liệu
+    await AccountRepo.removeRefreshToken(decoded.userId);
 
-    // Xóa hoặc vô hiệu hóa refreshToken trong DB
-    await AccountRepo.removeRefreshToken(userId);
-
-    // Phản hồi với mã trạng thái 204 (No Content)
-    res.status(200).json({ message: "Đăng xuất thành công" });
+    res.status(200).json({ message: "Logout successful" });
   } catch (error) {
-    next(error); // Truyền lỗi tới middleware để xử lý
+    next(error); // Sử dụng middleware next để xử lý lỗi
   }
 };
+
+
+const getUserInfo = async (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      throw createError.Unauthorized("Token is required");
+    }
+
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
+    const user = await AccountRepo.getById(decoded.userId);
+    if (!user) {
+      throw createError.NotFound("User not found");
+    }
+
+    // Loại bỏ password trước khi trả về
+    user.password = undefined; // Hoặc delete user.password;
+
+    res.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 export default {
   getAccount,
   getAccountById,
@@ -124,4 +166,5 @@ export default {
   deleteAccount,
   loginAccount,
   logoutAccount,
+  getUserInfo,
 };
