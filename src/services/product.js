@@ -37,33 +37,22 @@ const create = async ({
 // Get all
 const list = async (current = 1, pageSize = 10) => {
   try {
-    const skip = (current - 1) * pageSize;
-    
-    // Lấy tổng số sản phẩm
-    const totalProducts = await Products.countDocuments({});
-    
-    // Tính tổng số trang
-    const totalPages = Math.ceil(totalProducts / pageSize);
-    
-    // Nếu current vượt quá tổng số trang, trả về trang cuối cùng
-    const actualCurrent = current > totalPages ? totalPages : current;
-    
-    // Lấy sản phẩm với phân trang
+    const skip = (current - 1) * pageSize; // Calculate the number of records to skip
+    const total = await Products.countDocuments(); // Total number of records
     const products = await Products.find({})
-      .populate("supplier")
-      .skip((actualCurrent - 1) * pageSize)
-      .limit(pageSize)
+      .skip(skip) // Skip previous records
+      .limit(pageSize) // Limit the number of records returned
       .exec();
-    
+
     return {
-      current: actualCurrent,
-      pageSize,
-      totalPages,
-      totalProducts,
       products,
+      total,
+      totalPages: Math.ceil(total / pageSize), // Calculate total pages
+      currentPage: current, // Current page
+      pageSize, // Records per page
     };
   } catch (error) {
-    throw new Error(error.toString());
+    throw new Error(`Error fetching suppliers: ${error.message}`);
   }
 };
 

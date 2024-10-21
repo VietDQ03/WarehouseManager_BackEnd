@@ -10,12 +10,13 @@ import createError from "http-errors";
 // GET: /accounts
 const getAccount = async (req, res) => {
   try {
-    const accounts = await AccountRepo.list();
-    res.status(200).json(accounts);
+    const current = parseInt(req.query.current, 10) || 1;
+    const pageSize = parseInt(req.query.pageSize, 10) || 10;
+
+    const result = await AccountRepo.list(current, pageSize);
+    res.json(result);
   } catch (error) {
-    res.status(500).json({
-      message: error.toString(),
-    });
+    res.status(500).json({ error: error.message });
   }
 };
 

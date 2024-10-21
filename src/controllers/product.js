@@ -2,11 +2,13 @@ import { ProductRepo } from "../services/index.js";
 // GET: /products
 const getProducts = async (req, res) => {
   try {
-    res.status(200).json(await ProductRepo.list());
+    const current = parseInt(req.query.current, 10) || 1;
+    const pageSize = parseInt(req.query.pageSize, 10) || 10;
+
+    const result = await ProductRepo.list(current, pageSize);
+    res.json(result);
   } catch (error) {
-    res.status(500).json({
-      message: error.toString(),
-    });
+    res.status(500).json({ error: error.message });
   }
 };
 

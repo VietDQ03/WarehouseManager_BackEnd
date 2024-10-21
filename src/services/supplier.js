@@ -31,14 +31,27 @@ const create = async ({
 };
 
 // Get all
-const list = async () => {
+const list = async (current = 1, pageSize = 10) => {
   try {
-    return await Suppliers.find({})
+    const skip = (current - 1) * pageSize; // Calculate the number of records to skip
+    const total = await Suppliers.countDocuments(); // Total number of records
+    const suppliers = await Suppliers.find({})
+      .skip(skip) // Skip previous records
+      .limit(pageSize) // Limit the number of records returned
       .exec();
+
+    return {
+      suppliers,
+      total,
+      totalPages: Math.ceil(total / pageSize), // Calculate total pages
+      currentPage: current, // Current page
+      pageSize, // Records per page
+    };
   } catch (error) {
-    throw new Error(error.toString());
+    throw new Error(`Error fetching suppliers: ${error.message}`);
   }
 };
+
 
 
 const getById = async (id) => {

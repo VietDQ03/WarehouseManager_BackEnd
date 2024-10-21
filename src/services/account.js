@@ -33,27 +33,22 @@ const create = async ({
 // Get all accounts
 const list = async (current = 1, pageSize = 10) => {
   try {
-    // Tính toán số lượng bản ghi cần bỏ qua dựa trên `current` (trang hiện tại)
-    const skip = (current - 1) * pageSize;
-
-    // Truy vấn danh sách tài khoản với phân trang
+    const skip = (current - 1) * pageSize; // Calculate the number of records to skip
+    const total = await User.countDocuments(); // Total number of records
     const accounts = await User.find({})
-      .skip(skip) // Bỏ qua các bản ghi dựa trên `current`
-      .limit(pageSize) // Giới hạn số bản ghi trên mỗi trang theo `pageSize`
+      .skip(skip) // Skip previous records
+      .limit(pageSize) // Limit the number of records returned
       .exec();
-
-    // Đếm tổng số tài khoản để tính tổng số trang
-    const totalAccounts = await User.countDocuments({});
 
     return {
       accounts,
-      current, // Trang hiện tại
-      pageSize, // Số bản ghi trên mỗi trang
-      totalPages: Math.ceil(totalAccounts / pageSize), // Tổng số trang
-      totalAccounts, // Tổng số tài khoản
+      total,
+      totalPages: Math.ceil(total / pageSize), // Calculate total pages
+      currentPage: current, // Current page
+      pageSize, // Records per page
     };
   } catch (error) {
-    throw new Error(error.toString());
+    throw new Error(`Error fetching suppliers: ${error.message}`);
   }
 };
 
