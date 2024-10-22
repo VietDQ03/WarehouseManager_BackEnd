@@ -1,7 +1,11 @@
 import { InOrderRepo } from "../services/index.js";
 const getAll = async (req, res) => {
     try {
-      res.status(200).json(await InOrderRepo.list());
+      const current = parseInt(req.query.current, 10) || 1;
+      const pageSize = parseInt(req.query.pageSize, 10) || 10;
+  
+      const result = await InOrderRepo.list(current, pageSize);
+      res.json(result);
     } catch (error) {
       res.status(500).json({
         message: error.toString(),
