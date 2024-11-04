@@ -90,7 +90,16 @@ const editProduct = async (req, res) => {
   }
 };
 
-
+// DELETE: /products/1
+const deleteProduct = async (req, res) => {
+  try {
+    res.status(200).json(await ProductRepo.deleteProduct(req.params.id));
+  } catch (error) {
+    res.status(500).json({
+      error: error.toString(),
+    });
+  }
+};
 
 export default {
   getProducts,
