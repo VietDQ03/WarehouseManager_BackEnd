@@ -100,7 +100,6 @@ const loginAccount = async (req, res, next) => {
     next(error);
   }
 };
-//
 // DELETE: /accounts/:id
 const deleteAccount = async (req, res) => {
   try {
@@ -113,6 +112,7 @@ const deleteAccount = async (req, res) => {
     res.status(500).json({ error: error.toString() });
   }
 };
+
 
 const logoutAccount = async (req, res, next) => {
   try {
