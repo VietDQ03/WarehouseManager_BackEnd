@@ -57,15 +57,7 @@ const editSupplier = async (req, res) => {
 };
 
 
-const deleteSupplier = async (req, res) => {
-  try {
-    res.status(200).json(await SupplierRepo.deleteProduct(req.params.id));
-  } catch (error) {
-    res.status(500).json({
-      error: error.toString(),
-    });
-  }
-};
+
 
 export default {
   getSupplier,
