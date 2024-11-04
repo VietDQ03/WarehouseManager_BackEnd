@@ -20,7 +20,7 @@ const getCustomerByName = async (req, res) => {
     });
   }
 };
-
+//
 const createCustomer = async (req, res) => {
   try {
     const { name, phone, email, address } = req.body;

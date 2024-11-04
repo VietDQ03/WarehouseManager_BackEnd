@@ -12,7 +12,7 @@ const getAll = async (req, res) => {
     });
   }
 };
-
+//
 // GET: /products/1
 const getById = async (req, res) => {
   try {

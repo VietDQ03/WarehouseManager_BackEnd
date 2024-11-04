@@ -11,6 +11,7 @@ const getProducts = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+//
 
 // GET: /products/1
 const getProductById = async (req, res) => {
@@ -22,7 +23,7 @@ const getProductById = async (req, res) => {
     });
   }
 };
-
+//
 const getProductByCode = async (req, res) => {
   try {
     res.status(200).json(await ProductRepo.getByCode(req.params.id));
