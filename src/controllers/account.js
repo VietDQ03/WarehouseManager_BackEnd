@@ -100,6 +100,18 @@ const loginAccount = async (req, res, next) => {
     next(error);
   }
 };
+// // DELETE: /accounts/:id
+// const deleteAccount = async (req, res) => {
+//   try {
+//     const deletedAccount = await AccountRepo.deleteAccount(req.params.id);
+//     if (!deletedAccount) {
+//       throw createError.NotFound("Account not found ");
+//     }
+//     res.status(200).json({ message: "Account deleted successfully " });
+//   } catch (error) {
+//     res.status(500).json({ error: error.toString() });
+//   }
+// };
 // DELETE: /accounts/:id
 const deleteAccount = async (req, res) => {
   try {
@@ -112,7 +124,6 @@ const deleteAccount = async (req, res) => {
     res.status(500).json({ error: error.toString() });
   }
 };
-
 
 const logoutAccount = async (req, res, next) => {
   try {
