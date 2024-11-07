@@ -1,9 +1,14 @@
 import mongoose from "mongoose";
 
-// Logo schema for supplier logos
+// Logo schema for supplier logos with base64 validation
 const logoSchema = new mongoose.Schema({
   url: {
     type: String,
+    required: true,
+    validate: {
+      validator: (v) => v.startsWith("data:image/") && v.includes(";base64,"),
+      message: "Image URL must be a valid Base64 string starting with 'data:image/' and containing ';base64,'",
+    },
   },
   caption: {
     type: String,
@@ -25,7 +30,7 @@ const supplierSchema = new mongoose.Schema({
     required: [true, "Supplier name is required"],
     unique: [true, "Supplier name must be unique"],
   },
-  logo: [logoSchema],
+  logo: [logoSchema], // Updated to validate base64 format in logo images
   description: {
     type: String,
     required: [true, "Description is required"],

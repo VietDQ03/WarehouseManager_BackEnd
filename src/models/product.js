@@ -4,6 +4,11 @@ import mongoose from "mongoose";
 const imageSchema = new mongoose.Schema({
   url: {
     type: String,
+    required: true,
+    validate: {
+      validator: (v) => v.startsWith("data:image/") && v.includes(";base64,"),
+      message: "Image URL must be a valid Base64 string",
+    },
   },
   caption: {
     type: String,
@@ -18,17 +23,26 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: [true, "Product code is required"],
     unique: [true, "Product code must be unique"],
+    index: true, // Adding an index for faster queries
   },
   name: {
     type: String,
     trim: true,
     required: [true, "Product name is required"],
     unique: [true, "Product name must be unique"],
+    index: true, // Adding an index for faster queries
   },
-  images: [imageSchema],
+  images: {
+    type: [imageSchema],
+    validate: {
+      validator: (images) => Array.isArray(images) && images.length > 0,
+      message: "At least one image is required",
+    },
+  },
   supplier: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "suppliers",
+    required: true,
   },
   description: {
     type: String,
@@ -37,10 +51,7 @@ const productSchema = new mongoose.Schema({
   quantity: {
     type: Number,
     default: 0,
-    validate: {
-      validator: (value) => value >= 0,
-      message: "Quantity must be greater than or equal to zero",
-    },
+    min: [0, "Quantity must be greater than or equal to zero"],
   },
   size: {
     type: String,
@@ -53,18 +64,12 @@ const productSchema = new mongoose.Schema({
   in_price: {
     type: Number,
     default: 0,
-    validate: {
-      validator: (value) => value >= 0,
-      message: "Price must be a number and greater than or equal to zero",
-    },
+    min: [0, "In price must be greater than or equal to zero"],
   },
   out_price: {
     type: Number,
     default: 0,
-    validate: {
-      validator: (value) => value >= 0,
-      message: "Price must be a number and greater than or equal to zero",
-    },
+    min: [0, "Out price must be greater than or equal to zero"],
   },
 }, {
   timestamps: true,
