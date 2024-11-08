@@ -34,10 +34,7 @@ const productSchema = new mongoose.Schema({
   },
   images: {
     type: [imageSchema],
-    validate: {
-      validator: (images) => Array.isArray(images) && images.length > 0,
-      message: "At least one image is required",
-    },
+  
   },
   supplier: {
     type: mongoose.Schema.Types.ObjectId,

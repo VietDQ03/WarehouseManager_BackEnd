@@ -4,14 +4,11 @@ import mongoose from "mongoose";
 const logoSchema = new mongoose.Schema({
   url: {
     type: String,
-    required: true,
-    validate: {
-      validator: (v) => v.startsWith("data:image/") && v.includes(";base64,"),
-      message: "Image URL must be a valid Base64 string starting with 'data:image/' and containing ';base64,'",
-    },
+    default: '' // Thêm giá trị mặc định rỗng    
   },
   caption: {
     type: String,
+     default: '' // Thêm giá trị mặc định rỗng
   },
 }, {
   timestamps: true,
@@ -30,7 +27,10 @@ const supplierSchema = new mongoose.Schema({
     required: [true, "Supplier name is required"],
     unique: [true, "Supplier name must be unique"],
   },
-  logo: [logoSchema], // Updated to validate base64 format in logo images
+  logo: {
+    type: [logoSchema],
+    default: [{ url: '', caption: '' }] // Thêm giá trị mặc định
+  },
   description: {
     type: String,
     required: [true, "Description is required"],

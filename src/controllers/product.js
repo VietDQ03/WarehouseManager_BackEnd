@@ -1,4 +1,23 @@
 import { ProductRepo } from "../services/index.js";
+import multer from "multer";
+
+// Cấu hình multer
+const upload = multer({
+  limits: {
+    fileSize: 5 * 1024 * 1024, // giới hạn file 5MB
+  },
+  fileFilter: (req, file, cb) => {
+    if (
+      file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+      file.mimetype === 'application/vnd.ms-excel'
+    ) {
+      cb(null, true);
+    } else {
+      cb(new Error('Chỉ chấp nhận file Excel'), false);
+    }
+  }
+});
+
 // GET: /products
 const getProducts = async (req, res) => {
   try {
@@ -9,6 +28,49 @@ const getProducts = async (req, res) => {
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+const importProducts = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Vui lòng upload file Excel",
+      });
+    }
+
+    // Kiểm tra định dạng file
+    if (!req.file.mimetype.includes('spreadsheet')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Chỉ chấp nhận file Excel'
+      });
+    }
+
+    const result = await ProductRepo.importExcel(req.file);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const downloadTemplate = async (req, res) => {
+  try {
+    const buffer = await ProductRepo.generateTemplate();
+    
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=template_san_pham.xlsx');
+    
+    res.send(buffer);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
@@ -46,8 +108,6 @@ const getProductBySupplier = async (req, res) => {
 // POST: /products
 const createProduct = async (req, res) => {
   try {
-    // Get object from request body
-
     const {
       code,
       name,
@@ -108,4 +168,7 @@ export default {
   deleteProduct,
   getProductByCode,
   getProductBySupplier,
+  importProducts,
+  downloadTemplate,
+  upload
 };
