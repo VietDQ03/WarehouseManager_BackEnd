@@ -3,6 +3,9 @@ import { InOrderController } from '../controllers/index.js';
 
 const InOrderRouter = express.Router();
 
+InOrderRouter.get("/template/download", InOrderController.downloadTemplate);
+InOrderRouter.post("/import", InOrderController.upload.single('file'), InOrderController.importInOrders);
+
 InOrderRouter.get('/', InOrderController.getAll);
 
 InOrderRouter.get('/:id', InOrderController.getById);

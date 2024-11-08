@@ -3,6 +3,9 @@ import { OutOrderController } from '../controllers/index.js';
 
 const outOrderRouter = express.Router();
 
+
+outOrderRouter.get("/template/download", OutOrderController.downloadTemplate);
+outOrderRouter.post("/import", OutOrderController.upload.single('file'), OutOrderController.importOutOrders);
 outOrderRouter.get('/', OutOrderController.getAll);
 
 outOrderRouter.get('/:id', OutOrderController.getById);

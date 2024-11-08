@@ -1,4 +1,5 @@
 import { OutOrderRepo } from "../services/index.js";
+import multer from 'multer';
 const getAll = async (req, res) => {
   try {
     const current = parseInt(req.query.current, 10) || 1;
@@ -118,6 +119,68 @@ const getByMonth = async (req, res) => {
     res.status(500).json({ message: error.toString() });
   }
 };
+const importOutOrders = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Vui lòng upload file Excel",
+      });
+    }
+
+    const result = await OutOrderRepo.importExcel(req.file);
+    res.status(200).json({
+      success: true,
+      message: "Import đơn nhập thành công",
+      data: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: "Lỗi khi import đơn nhập",
+      error: error.message,
+    });
+  }
+};
+
+// Cấu hình upload
+const upload = multer({
+  limits: {
+    fileSize: 5 * 1024 * 1024, // giới hạn file 5MB
+  },
+  fileFilter: (req, file, cb) => {
+    if (
+      file.mimetype ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+      file.mimetype === "application/vnd.ms-excel"
+    ) {
+      cb(null, true);
+    } else {
+      cb(new Error("Chỉ chấp nhận file Excel"), false);
+    }
+  },
+});
+
+const downloadTemplate = async (req, res) => {
+  try {
+    const buffer = await OutOrderRepo.generateTemplate();
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=out_orders_template.xlsx"
+    );
+    res.send(buffer);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Lỗi khi tạo file template",
+      error: error.message,
+    });
+  }
+};
 
 export default {
   getAll,
@@ -129,4 +192,7 @@ export default {
   del,
   getByDate,
   getByMonth,
+  importOutOrders, 
+  upload,
+  downloadTemplate
 };
